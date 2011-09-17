@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <comScoreIDs>
+ 	<publisher name='Your Company Name' id='123456789' />
+ 	<genres customFieldName='genre'>
+ 		<genre name='Music' id='3001234' />
+		<genre name='Television' id='3001234' />
+		<genre name='Movies' id='3001234' />
+		<genre name='News' id='3001234' />
+		<genre name='Politics' id='3001234' />
+ 	</genres>
+	<locations customFieldName='location'>
+		<location name='tmz.com' id='3001234' />
+		<location name='switched.com' id='3001234' />
+		<location name='spinner.com' id='3001234' />
+	</locations>
+	<contentProducers customFieldName='contentproducer'>
+		<contentProducer name='AP' id='3001234' />
+		<contentProducer name='Reuters' id='3001234' />
+		<contentProducer name='The Weather Channel' id='3001234' />
+		<contentProducer name='CNN' id='3001234' />
+		<contentProducer name='Procotor &amp; Gamble' id='3001234' />
+	</contentProducers>
+ </comScoreIDs>
