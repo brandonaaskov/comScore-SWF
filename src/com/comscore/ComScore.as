@@ -24,15 +24,11 @@ package com.comscore
 		{
 			if(pVideo)
 			{
-				var partnerName:String = pVideo.customFields.partnername;
-				var genre:String = (pVideo.customFields.genre) ? pVideo.customFields.genre : null;
-				var show:String = (pVideo.customFields.series) ? pVideo.customFields.series : null;
-				
 				_publisherID = pMap.getPublisherID();
 				_locationID = getComScoreID(pMap.getLocations(), getDomainName(pLocation)) || _embedID;
-				_showID = getComScoreID(pMap.getShows(), show);
-				_genreID = getComScoreID(pMap.getGenres(), genre);
-				_contentProducerID = getComScoreID(pMap.getContentProducers(), partnerName);
+				_showID = getComScoreID(pMap.getShows(), pMap.getCustomFieldName('shows'));
+				_genreID = getComScoreID(pMap.getGenres(), pMap.getCustomFieldName('genres'));
+				_contentProducerID = getComScoreID(pMap.getContentProducers(), pMap.getCustomFieldName('contentproducers'));
 			}
 		}
 		
@@ -80,7 +76,7 @@ package com.comscore
 		private function getComScoreURL():String
 		{	
 			var rootURL:String = "http://beacon.securestudies.com/scripts/beacon.dll?";
-			var genreID:String = (!this.adBeacon) ? "02" + _genreID : "01" + _genreID;
+			var genreID:String = (!adBeacon) ? "02" + _genreID : "01" + _genreID;
 			
 			var params:Array = new Array(
 				"C1=1",

@@ -17,6 +17,10 @@ package com.brightcove
 		private var _genres:Array = new Array();
 		private var _contentProducers:Array = new Array();
 		private var _locations:Array = new Array();
+		private var _genresCustomFieldName:String;
+		private var _locationsCustomFieldName:String;
+		private var _contentProducersCustomFieldName:String;
+		private var _showsCustomFieldName:String;
 		
 		[Embed(source="../assets/comscore_map.xml", mimeType="application/octet-stream")]
 		private var ComScoreMapXML:Class;
@@ -85,10 +89,28 @@ package com.brightcove
 		private function mapSection(pSection:XMLList, pStorageArray:Array):void
 		{	
 			var customFieldName:String = String(pSection.@customFieldName).toLowerCase();
+			CustomLogger.instance.debug("SECTION NAME: " + pSection.name().toString().toLowerCase());
+			
+			switch(pSection.name().toString().toLowerCase())
+			{
+				case 'genres':
+					_genresCustomFieldName = customFieldName;
+					break;
+				case 'shows':
+					_showsCustomFieldName = customFieldName;
+					break;
+				case 'contentproducers':
+					_contentProducersCustomFieldName = customFieldName;
+					break;
+				case 'locations':
+					_locationsCustomFieldName = customFieldName;
+					break;
+			}
 			
 			for(var i:uint = 0; i < pSection.children().length(); i++)
 			{
 				var childElement:XML = pSection.children()[i];
+				
 				pStorageArray.push(new ComScoreEntry(
 					customFieldName, 
 					String(childElement.@name).toLowerCase(), 
@@ -103,6 +125,27 @@ package com.brightcove
 			loader.addEventListener(Event.COMPLETE, onResponse);
 			loader.dataFormat = URLLoaderDataFormat.TEXT;
 			loader.load(new URLRequest(pFileURL));
+		}
+		
+		public function getCustomFieldName(pComScoreSection:String):String
+		{
+			switch(pComScoreSection.toLowerCase())
+			{
+				case 'genres':
+					return _genresCustomFieldName;
+					break;
+				case 'shows':
+					return _showsCustomFieldName;
+					break;
+				case 'contentproducers':
+					return _contentProducersCustomFieldName;
+					break;
+				case 'locations':
+					return _locationsCustomFieldName;
+					break;
+			}
+			
+			return null;
 		}
 	}
 }
