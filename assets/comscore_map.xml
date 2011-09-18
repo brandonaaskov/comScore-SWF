@@ -10,7 +10,7 @@
  	</genres>
 	<locations customFieldName='location'>
 		<location name='google.com' id='3001234' />
-		<location name='aol.com' id='3001234' />
+		<location name='baaskov-brightcove.local' id='3001234' />
 		<location name='cnn.com' id='3001234' />
 	</locations>
 	<contentProducers customFieldName='contentprovider'>

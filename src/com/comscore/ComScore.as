@@ -26,9 +26,9 @@ package com.comscore
 			{
 				_publisherID = pMap.getPublisherID();
 				_locationID = getComScoreID(pMap.getLocations(), getDomainName(pLocation)) || _embedID;
-				_showID = getComScoreID(pMap.getShows(), pMap.getCustomFieldName('shows'));
-				_genreID = getComScoreID(pMap.getGenres(), pMap.getCustomFieldName('genres'));
-				_contentProducerID = getComScoreID(pMap.getContentProducers(), pMap.getCustomFieldName('contentproducers'));
+				_showID = getComScoreID(pMap.getShows(), pVideo.customFields[pMap.getCustomFieldName('shows')]);
+				_genreID = getComScoreID(pMap.getGenres(), pVideo.customFields[pMap.getCustomFieldName('genres')]);
+				_contentProducerID = getComScoreID(pMap.getContentProducers(), pVideo.customFields[pMap.getCustomFieldName('contentproducers')]);
 			}
 		}
 		
@@ -44,8 +44,10 @@ package com.comscore
 		
 		private function getComScoreID(pItems:Array, pItemToFind:String):String
 		{
-			for each(var item:Object in pItems)
+			for each(var item:ComScoreEntry in pItems)
 			{
+				CustomLogger.instance.debug('Item to find is: ' + pItemToFind.toLowerCase() + ' and Item Name is: ' + item.name.toLowerCase());
+				
 				if(pItemToFind && item.name && (item.name.toLowerCase() == pItemToFind.toLowerCase())) 
 				{
 					if(item.id) 

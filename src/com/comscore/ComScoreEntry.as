@@ -4,9 +4,9 @@ package com.comscore
 	{
 		private var _customFieldName:String;
 		private var _name:String
-		private var _id:Number;
+		private var _id:String;
 		
-		public function ComScoreEntry(customFieldName:String, name:String, id:Number)
+		public function ComScoreEntry(customFieldName:String, name:String, id:String)
 		{
 			_customFieldName = customFieldName;
 			_name = name;
@@ -23,7 +23,7 @@ package com.comscore
 			return _name;
 		}
 		
-		public function get id():Number
+		public function get id():String
 		{
 			return _id;
 		}

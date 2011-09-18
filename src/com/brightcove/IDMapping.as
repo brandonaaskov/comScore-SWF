@@ -121,7 +121,7 @@ package com.brightcove
 				pStorageArray.push(new ComScoreEntry(
 					customFieldName, 
 					String(childElement.@name).toLowerCase(), 
-					Number(childElement.@id)
+					String(childElement.@id)
 				));
 			}
 		}
