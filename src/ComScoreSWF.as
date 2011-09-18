@@ -1,3 +1,39 @@
+/**
+ * Brightcove comScore-SWF (18 SEPTEMBER 2011)
+ *
+ * REFERENCES:
+ *	 Website: http://opensource.brightcove.com
+ *	 Source: http://github.com/brightcoveos
+ *
+ * AUTHORS:
+ *	 Brandon Aaskov <baaskov@brightcove.com>
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the “Software”),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, alter, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, subject to the following conditions:
+ *   
+ * 1. The permission granted herein does not extend to commercial use of
+ * the Software by entities primarily engaged in providing online video and
+ * related services.
+ *  
+ * 2. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT ANY WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, SUITABILITY, TITLE,
+ * NONINFRINGEMENT, OR THAT THE SOFTWARE WILL BE ERROR FREE. IN NO EVENT
+ * SHALL THE AUTHORS, CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY WHATSOEVER, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE, INABILITY TO USE, OR OTHER DEALINGS IN THE SOFTWARE.
+ *  
+ * 3. NONE OF THE AUTHORS, CONTRIBUTORS, NOR BRIGHTCOVE SHALL BE RESPONSIBLE
+ * IN ANY MANNER FOR USE OF THE SOFTWARE.  THE SOFTWARE IS PROVIDED FOR YOUR
+ * CONVENIENCE AND ANY USE IS SOLELY AT YOUR OWN RISK.  NO MAINTENANCE AND/OR
+ * SUPPORT OF ANY KIND IS PROVIDED FOR THE SOFTWARE.
+ */
+
 package
 {
 	import com.brightcove.IDMapping;
@@ -17,6 +53,8 @@ package
 	import flash.events.Event;
 	import flash.system.Security;
 	
+	import mx.core.mx_internal;
+	
 	public class ComScoreSWF extends CustomModule
 	{
 		private var _experienceModule:ExperienceModule;
@@ -25,12 +63,16 @@ package
 		private var _comScore:ComScore;
 		private var _comScoreMap:IDMapping;
 		
-		private var _mappingComplete:Boolean = false;
 		private var _mediaComplete:Boolean = true;
 		private var _currentVideo:VideoDTO;
 		
 		public function ComScoreSWF()
 		{
+			trace('@project ComScoreSWF');
+			trace('@author Brandon Aaskov (Brightcove)');
+			trace('@lastModified 09.18.11 1257 PST');
+			trace('@version 0.9');
+			
 			Security.allowDomain("*");
 			Security.allowInsecureDomain("*");
 		}
@@ -40,7 +82,7 @@ package
 			_experienceModule = player.getModule(APIModules.EXPERIENCE) as ExperienceModule;
 			CustomLogger.instance.experienceModule = _experienceModule;
 			
-			var fileURL:String = getParamValue('comscore_map');
+			var fileURL:String = getParamValue('comscoreMap');
 			_comScoreMap = new IDMapping(fileURL);
 			_comScoreMap.addEventListener(Event.COMPLETE, onMappingComplete);
 			
@@ -48,13 +90,15 @@ package
 			_videoPlayerModule.addEventListener(MediaEvent.PLAY, onMediaPlay);
 			_videoPlayerModule.addEventListener(MediaEvent.COMPLETE, onMediaComplete);	
 			
-			_advertisingModule.addEventListener(AdEvent.AD_START, onAdStart);
+			if(_advertisingModule)
+			{	
+				_advertisingModule.addEventListener(AdEvent.AD_START, onAdStart);
+			}
 		}
 		
 		private function onMappingComplete(pEvent:Event):void
 		{
 			_comScore = new ComScore(_videoPlayerModule.getCurrentVideo(), _comScoreMap, _experienceModule.getExperienceURL());
-			_mappingComplete = true;
 			
 			if(!_mediaComplete) //the video already started, but we missed the chance to fire the beacon
 			{
@@ -72,12 +116,18 @@ package
 		
 		private function onMediaPlay(pEvent:MediaEvent):void
 		{
-			if(_mappingComplete && _mediaComplete)
+			if(_comScoreMap.mappingComplete && _mediaComplete)
 			{
 				CustomLogger.instance.debug("Sending video start beacon");
+				
+				if(!_comScore)
+				{
+					_comScore = new ComScore(_videoPlayerModule.getCurrentVideo(), _comScoreMap, _experienceModule.getExperienceURL());
+				}
+				
 				_comScore.sendBeacon();
 			}
-			else if(!_mappingComplete && _mediaComplete)
+			else if(!_comScoreMap.mappingComplete && _mediaComplete)
 			{
 				CustomLogger.instance.debug("Mapping was not completed in time. Will fire the beacon once it's complete.");
 			}

@@ -24,15 +24,11 @@ package com.comscore
 		{
 			if(pVideo)
 			{
-				var partnerName:String = pVideo.customFields.partnername;
-				var genre:String = (pVideo.customFields.genre) ? pVideo.customFields.genre : null;
-				var show:String = (pVideo.customFields.series) ? pVideo.customFields.series : null;
-				
 				_publisherID = pMap.getPublisherID();
 				_locationID = getComScoreID(pMap.getLocations(), getDomainName(pLocation)) || _embedID;
-				_showID = getComScoreID(pMap.getShows(), show);
-				_genreID = getComScoreID(pMap.getGenres(), genre);
-				_contentProducerID = getComScoreID(pMap.getContentProducers(), partnerName);
+				_showID = getComScoreID(pMap.getShows(), pVideo.customFields[pMap.getCustomFieldName('shows')]);
+				_genreID = getComScoreID(pMap.getGenres(), pVideo.customFields[pMap.getCustomFieldName('genres')]);
+				_contentProducerID = getComScoreID(pMap.getContentProducers(), pVideo.customFields[pMap.getCustomFieldName('contentproducers')]);
 			}
 		}
 		
@@ -48,12 +44,15 @@ package com.comscore
 		
 		private function getComScoreID(pItems:Array, pItemToFind:String):String
 		{
-			for each(var item:Object in pItems)
+			for each(var item:ComScoreEntry in pItems)
 			{
+				CustomLogger.instance.debug('Item to find is: ' + pItemToFind.toLowerCase() + ' and Item Name is: ' + item.name.toLowerCase());
+				
 				if(pItemToFind && item.name && (item.name.toLowerCase() == pItemToFind.toLowerCase())) 
 				{
 					if(item.id) 
 					{
+						CustomLogger.instance.debug('Item ID is: ' + item.id);
 						return item.id;
 					}
 				}
@@ -63,34 +62,53 @@ package com.comscore
 		
 		private function getDomainName(pLocation:String):String
 		{
-			var domainName:String;
-			var urlPieces:Array = pLocation.split('/');
-			for(var i:uint = 0; i < urlPieces.length; i++)
+			var topLevelDomain:String;
+			var domainSplit:Array = pLocation.split('/');
+			var topLevelDomainIndex:uint;
+			
+			for(var i:uint = 0; i < domainSplit.length; i++)
 			{
-				if(urlPieces[i] == "http:")
+				var domainItem:String = domainSplit[i];
+				if(domainItem.length > 1 && domainItem.indexOf('http') == -1)
 				{
-					CustomLogger.instance.debug("Domain Name Returned is " + urlPieces[i+2]);
-					return urlPieces[i+2];
+					topLevelDomainIndex = i;
+					break;
 				}
-				else throw new Error("URL being parsed didn't start with http:// as expected");
 			}
-			return domainName;
+			
+			CustomLogger.instance.debug('TOP LEVEL DOMAIN: ' + domainSplit[topLevelDomainIndex]);
+			
+			return domainSplit[topLevelDomainIndex];
 		}
 		
 		private function getComScoreURL():String
 		{	
 			var rootURL:String = "http://beacon.securestudies.com/scripts/beacon.dll?";
-			var genreID:String = (!this.adBeacon) ? "02" + _genreID : "01" + _genreID;
+			var genreID:String = (!adBeacon) ? "02" + _genreID : "01" + _genreID;
 			
 			var params:Array = new Array(
 				"C1=1",
-				"C2=" + _publisherID,
-				"C3=" + _contentProducerID,
-				"C4=" + _locationID,
-				"C5=" + genreID,
-				"C6=" + _showID,
-				"rn=" + new Date().time
+				"C2=" + _publisherID
 			);
+			
+			if(_contentProducerID)
+			{
+				params.push("C3=" + _contentProducerID);
+			}
+			if(_locationID)
+			{
+				params.push("C4=" + _locationID);
+			}
+			if(_genreID)
+			{
+				params.push("C5=" + genreID);
+			}
+			if(_showID)
+			{
+				params.push("C6=" + _showID);
+			}
+			
+			params.push("rn=" + new Date().time);
 			
 			return rootURL + params.join('&');
 		}
