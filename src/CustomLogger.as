@@ -7,8 +7,6 @@ package
 		private static const _instance:CustomLogger = new CustomLogger();
 		private var _experienceModule:ExperienceModule;
 		
-		public var debugMode:Boolean = false;
-		
 		public function CustomLogger()
 		{
 			if(_instance) throw new Error("Please use the instance property to access the CustomLogger." );
@@ -26,11 +24,8 @@ package
 		
 		public function debug(text:String):void
 		{
-			if(debugMode)
-			{
-				var debugStatement:String = "comScore-SWF: " + text;
-				(_experienceModule) ? _experienceModule.debug(debugStatement) : trace(debugStatement);
-			}
+			var debugStatement:String = "comScore-SWF: " + text;
+			(_experienceModule) ? _experienceModule.debug(debugStatement) : trace(debugStatement);
 		}
 	}
 }

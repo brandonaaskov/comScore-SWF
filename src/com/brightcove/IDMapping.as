@@ -22,6 +22,8 @@ package com.brightcove
 		private var _contentProducersCustomFieldName:String;
 		private var _showsCustomFieldName:String;
 		
+		public var mappingComplete:Boolean = false;
+		
 		[Embed(source="../assets/comscore_map.xml", mimeType="application/octet-stream")]
 		private var ComScoreMapXML:Class;
 		
@@ -78,20 +80,25 @@ package com.brightcove
 		{
 			_publisherID = _comScoreXML.publisher.@id;
 			
-			mapSection(_comScoreXML.categories.category, _genres);
-			mapSection(_comScoreXML.shows, _shows);
+			mapSection(_comScoreXML.genres, _genres);
 			mapSection(_comScoreXML.contentProducers, _contentProducers);
 			mapSection(_comScoreXML.locations, _locations);
 			
-			dispatchEvent(new Event(Event.COMPLETE));
+			if(XMLList(_comScoreXML.shows).length() > 0)
+			{
+				mapSection(_comScoreXML.shows, _shows);
+			}
+			
+			mappingComplete = true;
+			dispatchEvent(new Event(Event.COMPLETE, true));
 		}
 		
 		private function mapSection(pSection:XMLList, pStorageArray:Array):void
 		{	
 			var customFieldName:String = String(pSection.@customFieldName).toLowerCase();
-			CustomLogger.instance.debug("SECTION NAME: " + pSection.name().toString().toLowerCase());
+			CustomLogger.instance.debug("Custom Field Name: " + customFieldName);
 			
-			switch(pSection.name().toString().toLowerCase())
+			switch(String(pSection.localName()).toLowerCase())
 			{
 				case 'genres':
 					_genresCustomFieldName = customFieldName;

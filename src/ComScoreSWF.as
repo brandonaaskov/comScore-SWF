@@ -17,6 +17,8 @@ package
 	import flash.events.Event;
 	import flash.system.Security;
 	
+	import mx.core.mx_internal;
+	
 	public class ComScoreSWF extends CustomModule
 	{
 		private var _experienceModule:ExperienceModule;
@@ -25,12 +27,15 @@ package
 		private var _comScore:ComScore;
 		private var _comScoreMap:IDMapping;
 		
-		private var _mappingComplete:Boolean = false;
 		private var _mediaComplete:Boolean = true;
 		private var _currentVideo:VideoDTO;
 		
 		public function ComScoreSWF()
 		{
+			trace('@project ComScoreSWF');
+			trace('@author Brandon Aaskov (Brightcove)');
+			trace('@lastModified 09.18.11 1155 PST');
+			
 			Security.allowDomain("*");
 			Security.allowInsecureDomain("*");
 		}
@@ -48,13 +53,15 @@ package
 			_videoPlayerModule.addEventListener(MediaEvent.PLAY, onMediaPlay);
 			_videoPlayerModule.addEventListener(MediaEvent.COMPLETE, onMediaComplete);	
 			
-			_advertisingModule.addEventListener(AdEvent.AD_START, onAdStart);
+			if(_advertisingModule)
+			{	
+				_advertisingModule.addEventListener(AdEvent.AD_START, onAdStart);
+			}
 		}
 		
 		private function onMappingComplete(pEvent:Event):void
 		{
 			_comScore = new ComScore(_videoPlayerModule.getCurrentVideo(), _comScoreMap, _experienceModule.getExperienceURL());
-			_mappingComplete = true;
 			
 			if(!_mediaComplete) //the video already started, but we missed the chance to fire the beacon
 			{
@@ -72,12 +79,18 @@ package
 		
 		private function onMediaPlay(pEvent:MediaEvent):void
 		{
-			if(_mappingComplete && _mediaComplete)
+			if(_comScoreMap.mappingComplete && _mediaComplete)
 			{
 				CustomLogger.instance.debug("Sending video start beacon");
+				
+				if(!_comScore)
+				{
+					_comScore = new ComScore(_videoPlayerModule.getCurrentVideo(), _comScoreMap, _experienceModule.getExperienceURL());
+				}
+				
 				_comScore.sendBeacon();
 			}
-			else if(!_mappingComplete && _mediaComplete)
+			else if(!_comScoreMap.mappingComplete && _mediaComplete)
 			{
 				CustomLogger.instance.debug("Mapping was not completed in time. Will fire the beacon once it's complete.");
 			}

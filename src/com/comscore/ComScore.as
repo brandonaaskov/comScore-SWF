@@ -80,13 +80,27 @@ package com.comscore
 			
 			var params:Array = new Array(
 				"C1=1",
-				"C2=" + _publisherID,
-				"C3=" + _contentProducerID,
-				"C4=" + _locationID,
-				"C5=" + genreID,
-				"C6=" + _showID,
-				"rn=" + new Date().time
+				"C2=" + _publisherID
 			);
+			
+			if(_contentProducerID)
+			{
+				params.push("C3=" + _contentProducerID);
+			}
+			if(_locationID)
+			{
+				params.push("C4=" + _locationID);
+			}
+			if(_genreID)
+			{
+				params.push("C5=" + genreID);
+			}
+			if(_showID)
+			{
+				params.push("C6=" + _showID);
+			}
+			
+			params.push("rn=" + new Date().time);
 			
 			return rootURL + params.join('&');
 		}
