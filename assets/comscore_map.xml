@@ -6,16 +6,16 @@
 		<genre name='Television' id='3001234' />
 		<genre name='Movies' id='3001234' />
 		<genre name='News' id='3001234' />
-		<genre name='Politics' id='3001234' />
+		<genre name='Entertainment' id='3001234' />
  	</genres>
 	<locations customFieldName='location'>
-		<location name='tmz.com' id='3001234' />
-		<location name='switched.com' id='3001234' />
-		<location name='spinner.com' id='3001234' />
+		<location name='google.com' id='3001234' />
+		<location name='aol.com' id='3001234' />
+		<location name='cnn.com' id='3001234' />
 	</locations>
-	<contentProducers customFieldName='contentproducer'>
+	<contentProducers customFieldName='contentprovider'>
 		<contentProducer name='AP' id='3001234' />
-		<contentProducer name='Reuters' id='3001234' />
+		<contentProducer name='Joseph Aaskov' id='3001234' />
 		<contentProducer name='The Weather Channel' id='3001234' />
 		<contentProducer name='CNN' id='3001234' />
 		<contentProducer name='Procotor &amp; Gamble' id='3001234' />
