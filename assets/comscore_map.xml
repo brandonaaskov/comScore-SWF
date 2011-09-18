@@ -10,14 +10,21 @@
  	</genres>
 	<locations customFieldName='location'>
 		<location name='google.com' id='3001234' />
+		<location name='x.brightcove.com' id='3001234' />
 		<location name='baaskov-brightcove.local' id='3001234' />
 		<location name='cnn.com' id='3001234' />
 	</locations>
 	<contentProducers customFieldName='contentprovider'>
 		<contentProducer name='AP' id='3001234' />
-		<contentProducer name='Joseph Aaskov' id='3001234' />
+		<contentProducer name='Reuters' id='3001234' />
 		<contentProducer name='The Weather Channel' id='3001234' />
 		<contentProducer name='CNN' id='3001234' />
 		<contentProducer name='Procotor &amp; Gamble' id='3001234' />
 	</contentProducers>
+	<shows customFieldName='show'>
+		<show name='Meet the Press' id='3001234' />
+		<show name='Family Guy' id='3001234' />
+		<show name='30 Rock' id='3001234' />
+		<show name='Lost' id='3001234' />
+	</shows>
  </comScoreIDs>

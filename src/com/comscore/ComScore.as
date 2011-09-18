@@ -52,6 +52,7 @@ package com.comscore
 				{
 					if(item.id) 
 					{
+						CustomLogger.instance.debug('Item ID is: ' + item.id);
 						return item.id;
 					}
 				}
@@ -61,18 +62,23 @@ package com.comscore
 		
 		private function getDomainName(pLocation:String):String
 		{
-			var domainName:String;
-			var urlPieces:Array = pLocation.split('/');
-			for(var i:uint = 0; i < urlPieces.length; i++)
+			var topLevelDomain:String;
+			var domainSplit:Array = pLocation.split('/');
+			var topLevelDomainIndex:uint;
+			
+			for(var i:uint = 0; i < domainSplit.length; i++)
 			{
-				if(urlPieces[i] == "http:")
+				var domainItem:String = domainSplit[i];
+				if(domainItem.length > 1 && domainItem.indexOf('http') == -1)
 				{
-					CustomLogger.instance.debug("Domain Name Returned is " + urlPieces[i+2]);
-					return urlPieces[i+2];
+					topLevelDomainIndex = i;
+					break;
 				}
-				else throw new Error("URL being parsed didn't start with http:// as expected");
 			}
-			return domainName;
+			
+			CustomLogger.instance.debug('TOP LEVEL DOMAIN: ' + domainSplit[topLevelDomainIndex]);
+			
+			return domainSplit[topLevelDomainIndex];
 		}
 		
 		private function getComScoreURL():String
