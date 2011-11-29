@@ -70,8 +70,8 @@ package
 		{
 			trace('@project ComScoreSWF');
 			trace('@author Brandon Aaskov (Brightcove)');
-			trace('@lastModified 09.18.11 1257 PST');
-			trace('@version 0.9');
+			trace('@lastModified 10.03.11 1045 EST');
+			trace('@version 0.9.1');
 			
 			Security.allowDomain("*");
 			Security.allowInsecureDomain("*");
