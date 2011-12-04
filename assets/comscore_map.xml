@@ -1,30 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
- <comScoreIDs>
- 	<publisher name='Your Company Name' id='123456789' />
- 	<genres customFieldName='genre'>
- 		<genre name='Music' id='3001234' />
-		<genre name='Television' id='3001234' />
-		<genre name='Movies' id='3001234' />
-		<genre name='News' id='3001234' />
-		<genre name='Entertainment' id='3001234' />
- 	</genres>
-	<locations customFieldName='location'>
-		<location name='google.com' id='3001234' />
-		<location name='x.brightcove.com' id='3001234' />
-		<location name='baaskov-brightcove.local' id='3001234' />
-		<location name='cnn.com' id='3001234' />
-	</locations>
-	<contentProducers customFieldName='contentprovider'>
-		<contentProducer name='AP' id='3001234' />
-		<contentProducer name='Reuters' id='3001234' />
-		<contentProducer name='The Weather Channel' id='3001234' />
-		<contentProducer name='CNN' id='3001234' />
-		<contentProducer name='Procotor &amp; Gamble' id='3001234' />
-	</contentProducers>
-	<shows customFieldName='show'>
-		<show name='Meet the Press' id='3001234' />
-		<show name='Family Guy' id='3001234' />
-		<show name='30 Rock' id='3001234' />
-		<show name='Lost' id='3001234' />
-	</shows>
- </comScoreIDs>
+<comScoreMap>
+	<clientID>1234567</clientID>
+	
+	<cValues>
+		<cValue number="3" value="{video.customFields['something']}" />
+		<cValue number="4" value="{video.displayName}" />
+		<cValue number="6" value="{video.displayName}" />
+	</cValues>
+</comScoreMap>
