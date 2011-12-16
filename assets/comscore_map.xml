@@ -3,8 +3,8 @@
 	<clientID>1234567</clientID>
 	
 	<cValues>
-		<cValue number="3" value="{video.customFields['something']}" />
-		<cValue number="4" value="{video.displayName}" />
+		<cValue number="3" value="{video.customFields['dropzone']}" />
+		<cValue number="4" value="{video.customFields['discipline']}" />
 		<cValue number="6" value="{video.displayName}" />
 	</cValues>
 </comScoreMap>

@@ -13,6 +13,8 @@ package com.brightcove.opensource
 		private var _c4:String;
 		private var _c6:String;
 		
+		private var _mappingComplete:Boolean = false;
+		
 		[Embed(source="../assets/comscore_map.xml", mimeType="application/octet-stream")]
 		protected const EventsMap:Class;
 
@@ -51,11 +53,11 @@ package com.brightcove.opensource
 		{
 			_clientID = pMap.clientID;
 			
-			for(var node:String in pMap.cValues)
+			for(var node:String in pMap.cValues.cValue)
 			{
-				var cValue:XML = pMap.cValues[node];
-			
-				switch(cValue.@number)
+				var cValue:XML = pMap.cValues.cValue[node];
+				
+				switch(uint(cValue.@number))
 				{
 					case 3:
 						_c3 = cValue.@value;
@@ -65,6 +67,8 @@ package com.brightcove.opensource
 						_c6 = cValue.@value;
 				}
 			}
+			
+			_mappingComplete = true;
 		}
 		
 		public function getCValue(number:int):String
@@ -85,6 +89,11 @@ package com.brightcove.opensource
 		public function get clientID():int
 		{
 			return _clientID;
+		}
+		
+		public function get mappingComplete():Boolean
+		{
+			return _mappingComplete;
 		}
 	}
 }
