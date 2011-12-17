@@ -125,7 +125,16 @@ package
 		private function onMappingComplete(pEvent:Event):void
 		{
 			CustomLogger.instance.debug('Mapping Complete');
+			
+			//client ID override
+			var clientID:String = getParamValue('clientID');
+			if(clientID)
+			{
+				_comScoreMap.clientID = Number(clientID);
+			}
+			
 			_comScore = new ComScore(_comScoreMap, _experienceModule);
+			
 			setupForNewVideo();
 			
 			if(!_mediaComplete && _videoPlayerModule.isPlaying()) //the video already started, but we missed the chance to fire the beacon

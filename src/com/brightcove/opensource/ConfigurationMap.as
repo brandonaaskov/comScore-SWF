@@ -95,6 +95,11 @@ package com.brightcove.opensource
 			return _clientID;
 		}
 		
+		public function set clientID(pClientID:int):void
+		{
+			_clientID = pClientID;	
+		}
+		
 		public function get mappingComplete():Boolean
 		{
 			return _mappingComplete;
