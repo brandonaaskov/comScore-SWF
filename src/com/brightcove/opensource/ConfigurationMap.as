@@ -18,7 +18,11 @@ package com.brightcove.opensource
 		[Embed(source="../assets/comscore_map.xml", mimeType="application/octet-stream")]
 		protected const EventsMap:Class;
 
-		public function ConfigurationMap(xmlFileURL:String = null)
+		public function ConfigurationMap()
+		{
+		}
+		
+		public function load(xmlFileURL:String = null):void
 		{
 			if(xmlFileURL)
 			{

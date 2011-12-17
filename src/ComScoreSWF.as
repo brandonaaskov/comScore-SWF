@@ -1,5 +1,5 @@
 /**
- * Brightcove comScore-SWF (18 SEPTEMBER 2011)
+ * Brightcove comScore-SWF (16 DECEMBER 2011)
  *
  * REFERENCES:
  *	 Website: http://opensource.brightcove.com
@@ -56,7 +56,10 @@ package
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
+	import flash.net.navigateToURL;
+	import flash.sensors.Accelerometer;
 	import flash.system.Security;
+	import flash.text.TextField;
 	import flash.utils.Timer;
 	
 	import mx.core.mx_internal;
@@ -71,7 +74,7 @@ package
 		private var _comScoreMap:ConfigurationMap;
 		
 		private var _mediaComplete:Boolean = true;
-		private var _mediaBegin:Boolean = false;
+		private var _videoWasWatched:Boolean = false;
 		private var _adComplete:Boolean = false;
 		private var _videoSegments:Array = new Array();
 		
@@ -79,13 +82,16 @@ package
 		{
 			trace('@project ComScoreSWF');
 			trace('@author Brandon Aaskov (Brightcove)');
-			trace('@lastModified 12.16.11 0215 EST');
-			trace('@version 2.0.0');
+			trace('@lastModified 12.16.11 1929 EST');
+			trace('@version 2.0.2');
 			
 			Security.allowDomain("*");
 			Security.allowInsecureDomain("*");
 			
-			_comScoreMap = new ConfigurationMap();
+			/*		
+			KNOWN ISSUES:
+			- on replay, ad tracks as post-roll
+			*/
 		}
 		
 		override protected function initialize():void
@@ -93,14 +99,11 @@ package
 			_experienceModule = player.getModule(APIModules.EXPERIENCE) as ExperienceModule;
 			CustomLogger.instance.experienceModule = _experienceModule;
 			
-			var fileURL:String = getParamValue('comscoreMap');
-			_comScoreMap = new ConfigurationMap(fileURL);
-			_comScoreMap.addEventListener(Event.COMPLETE, onMappingComplete);
-			
 			_videoPlayerModule = player.getModule(APIModules.VIDEO_PLAYER) as VideoPlayerModule;
+			_videoPlayerModule.addEventListener(MediaEvent.CHANGE, onMediaChange);
 			_videoPlayerModule.addEventListener(MediaEvent.PLAY, onMediaPlay);
 			_videoPlayerModule.addEventListener(MediaEvent.PROGRESS, onMediaProgress);
-			_videoPlayerModule.addEventListener(MediaEvent.COMPLETE, onMediaComplete);	
+			_videoPlayerModule.addEventListener(MediaEvent.COMPLETE, onMediaComplete);
 			
 			_advertisingModule = player.getModule(APIModules.ADVERTISING) as AdvertisingModule;
 			if(_advertisingModule)
@@ -110,13 +113,20 @@ package
 			}
 			
 			_cuePointsModule = player.getModule(APIModules.CUE_POINTS) as CuePointsModule;
-			_cuePointsModule.addEventListener(CuePointEvent.CUE, onCuePoint);	
+			_cuePointsModule.addEventListener(CuePointEvent.CUE, onCuePoint);
+			
+			var fileURL:String = getParamValue('comscoreMap');
+			_comScoreMap = new ConfigurationMap();
+			_comScoreMap.addEventListener(Event.COMPLETE, onMappingComplete);
+			_comScoreMap.load(fileURL);
 		}
 		
+		//------------------------------------------------------------------------------------------------- EVENT LISTENERS
 		private function onMappingComplete(pEvent:Event):void
 		{
 			CustomLogger.instance.debug('Mapping Complete');
 			_comScore = new ComScore(_comScoreMap, _experienceModule);
+			setupForNewVideo();
 			
 			if(!_mediaComplete && _videoPlayerModule.isPlaying()) //the video already started, but we missed the chance to fire the beacon
 			{
@@ -124,57 +134,22 @@ package
 			}
 		}
 		
-		private function onAdStart(pEvent:AdEvent):void
+		private function onMediaChange(pEvent:MediaEvent):void
 		{
-			if(_comScore)
-			{
-				if(!_mediaBegin)
-				{
-					CustomLogger.instance.debug('pre-roll');
-					_comScore.isPreRollAd = true;
-				}
-				else if(_mediaComplete && _mediaBegin)
-				{
-					CustomLogger.instance.debug('post-roll');
-					_comScore.isPostRollAd = true;
-				}
-				else if(!_mediaComplete && _mediaBegin)
-				{
-					CustomLogger.instance.debug('mid-roll');
-					_comScore.isMidRollAd = true;
-				}
-				
-				CustomLogger.instance.debug("Sending ad beacon.");
-				_comScore.sendBeacon();
-			}
-		}
-		
-		private function onAdComplete(pEvent:AdEvent):void
-		{
-			//only setting the ad complete flag if we just watched a midroll ad
-			if(!_mediaComplete)
-			{
-				CustomLogger.instance.debug('Setting Ad Complete to True');
-				_adComplete = true;
-			}
+			setupForNewVideo();
 		}
 		
 		private function onMediaPlay(pEvent:MediaEvent):void
 		{
 			if(_comScoreMap.mappingComplete && _mediaComplete)
 			{
-				CustomLogger.instance.debug("Sending video start beacon");
-				
 				if(!_comScore)
 				{
 					_comScore = new ComScore(_comScoreMap, _experienceModule);
 				}
 				
-				//set up some stuff for the current video before we send the first beacon
-				_mediaBegin = true;
-				getAdCuePoints();
-				_comScore.currentVideo = _videoPlayerModule.getCurrentVideo();
-				_comScore.currentSegment = 1;
+				setupForNewVideo();
+				CustomLogger.instance.debug("Sending video start beacon");
 				_comScore.sendBeacon();
 			}
 			else if(!_comScoreMap.mappingComplete && _mediaComplete)
@@ -198,12 +173,56 @@ package
 				CustomLogger.instance.debug("Sending content beacon after mid-roll ad.");
 				_comScore.sendBeacon();
 			}
+			
+			if(!_videoWasWatched)
+			{
+				_videoWasWatched = true;
+			}
+			
+			if(_comScore.videoSegments && _comScore.videoSegments.length > 0)
+			{
+				checkForCurrentSegment(pEvent.position);
+			}
 		}
 		
 		private function onMediaComplete(pEvent:MediaEvent):void
 		{
 			_mediaComplete = true;
-			_mediaBegin = false;
+		}
+		
+		private function onAdStart(pEvent:AdEvent):void
+		{
+			if(_comScore)
+			{
+				if(_mediaComplete && _videoWasWatched)
+				{
+					CustomLogger.instance.debug('post-roll');
+					_comScore.isPostRollAd = true;
+				}
+				else if(!_mediaComplete && _videoWasWatched)
+				{
+					CustomLogger.instance.debug('mid-roll');
+					_comScore.isMidRollAd = true;
+				}
+				else if(_mediaComplete && !_videoWasWatched)
+				{
+					CustomLogger.instance.debug('pre-roll');
+					_comScore.isPreRollAd = true;
+				}
+				
+				CustomLogger.instance.debug("Sending ad beacon.");
+				_comScore.sendBeacon();
+			}
+		}
+		
+		private function onAdComplete(pEvent:AdEvent):void
+		{
+			//only setting the ad complete flag if we just watched a midroll ad
+			if(!_mediaComplete)
+			{
+				CustomLogger.instance.debug('Setting Ad Complete to True');
+				_adComplete = true;
+			}
 		}
 		
 		private function onCuePoint(pEvent:CuePointEvent):void
@@ -222,11 +241,37 @@ package
 				}
 			}
 		}
+		//-------------------------------------------------------------------------------------------------
+
 		
-//		private function onContentBeaconTimer(pEvent:TimerEvent):void
-//		{
-//			
-//		}
+		
+		
+		//------------------------------------------------------------------------------------------------- HELPER FUNCTIONS
+		private function setupForNewVideo():void
+		{
+			//set up some stuff for the current video before we send the first beacon
+			getAdCuePoints();
+			_videoWasWatched = false;
+			_comScore.isPreRollAd = false;
+			_comScore.isMidRollAd = false;
+			_comScore.isPostRollAd = false;
+			_comScore.currentVideo = _videoPlayerModule.getCurrentVideo();
+			_comScore.currentSegment = 1;
+		}
+		
+		private function checkForCurrentSegment(pCurrentPosition:Number):void
+		{
+			for(var i:uint = 0; i < _comScore.videoSegments.length; i++)
+			{
+				var videoSegment:VideoSegment = _comScore.videoSegments[i];
+				
+				if(videoSegment.startTime > pCurrentPosition)
+				{
+					_comScore.currentSegment = i;
+					break;
+				}
+			}
+		}
 		
 		private function getAdCuePoints():void
 		{
@@ -235,41 +280,43 @@ package
 			if(currentVideo)
 			{
 				var cuePoints:Array = _cuePointsModule.getCuePoints(currentVideo.id);
-				var videoSegments:Array = new Array();
 				
-				for(var i:uint = 0; i < cuePoints.length; i++)
+				if(cuePoints)
 				{
-					var cuePoint:VideoCuePointDTO = cuePoints[i];
-					var preOrPostRoll:Boolean = ((cuePoint.name && (cuePoint.name.toLowerCase() == "pre-roll")) || (cuePoint.name && (cuePoint.name.toLowerCase() == "post-roll"))) ? true : false;
+					var videoSegments:Array = new Array();
 					
-					if(cuePoint.type == 0 && !preOrPostRoll) //is an ad cue point and is not the pre or post roll ad
+					for(var i:uint = 0; i < cuePoints.length; i++)
 					{
-						var endTime:Number;
+						var cuePoint:VideoCuePointDTO = cuePoints[i];
+						var isPostRoll:Boolean = (cuePoint.name && (cuePoint.name.toLowerCase() == "post-roll")) ? true : false;
 						
-						if((i + 1) == cuePoints.length)
+						//we don't want to include the postroll cue point because that doesn't represent the beginning of a new segment
+						if(cuePoint.type == 0 && !isPostRoll)
 						{
-							endTime = currentVideo.length / 1000;
+							var endTime:Number;
+							
+							if((i + 1) == cuePoints.length)
+							{
+								endTime = currentVideo.length / 1000;
+							}
+							else
+							{
+								endTime = VideoCuePointDTO(cuePoints[i+1]).time;
+							}
+							
+							var metadata:String = (cuePoint.metadata) ? cuePoint.metadata.toString() : "";
+							videoSegments.push(new VideoSegment(cuePoint.time, endTime, metadata));
 						}
-						else
-						{
-							endTime = VideoCuePointDTO(cuePoints[i+1]).time;
-						}
-						
-						var metadata:String = (cuePoint.metadata) ? cuePoint.metadata.toString() : "";
-						videoSegments.push(new VideoSegment(cuePoint.time, endTime, metadata));
 					}
+					
+					_comScore.videoSegments = videoSegments;
 				}
-				
-				_comScore.videoSegments = videoSegments;
+				else
+				{
+					_comScore.videoSegments = new Array(new VideoSegment(0, _videoPlayerModule.getCurrentVideo().length, ''));
+				}
 			}
 		}
-		
-//		private function debug(pMessage:String):void
-//		{
-//			var message:String = 'comScore-SWF: ' + pMessage;
-//			
-//			(_experienceModule) ? _experienceModule.debug(message) : trace(message);
-//		}
 		
 		private function getParamValue(key:String):String
 		{
@@ -310,5 +357,6 @@ package
 			
 			return null;
 		}
+		//-------------------------------------------------------------------------------------------------
 	}
 }

@@ -45,14 +45,18 @@ package com.comscore
 		{	
 			var rootURL:String = "http://b.scorecardresearch.com/p?";
 			
+			var c3:String = _map.getCValue(3);
+			var c4:String = _map.getCValue(4);
+			var c6:String = _map.getCValue(6);
+			
 			var params:Array = new Array(
 				'cv=2.0',
 				'C1=1',
 				'C2=' + _map.clientID,
-				'C3=' + encodeURIComponent(_binder.getValue(_map.getCValue(3), _experienceModule, _currentVideo)),
-				'C4=' + encodeURIComponent(_binder.getValue(_map.getCValue(4), _experienceModule, _currentVideo)),
+				'C3=' + encodeURIComponent(getCustomValue(3)),
+				'C4=' + encodeURIComponent(getCustomValue(4)),
 				'C5=' + getContentTypeValue(),
-				'C6=' + encodeURIComponent(_binder.getValue(_map.getCValue(6), _experienceModule, _currentVideo)),
+				'C6=' + encodeURIComponent(getCustomValue(6)),
 				'C7=' + encodeURIComponent(_experienceModule.getExperienceURL()),
 				'C8=' + encodeURIComponent(_currentVideo.displayName),
 				'C9=' + encodeURIComponent(_experienceModule.getReferrerURL()),
@@ -61,6 +65,22 @@ package com.comscore
 			);
 			
 			return rootURL + params.join('&');
+		}
+		
+		private function getCustomValue(pCValue:uint):String
+		{
+			var trueValue:String;
+			
+			if(pCValue && _map.getCValue(pCValue))
+			{
+				trueValue = _binder.getValue(_map.getCValue(pCValue), _experienceModule, _currentVideo);
+			}
+			else if(_currentVideo.customFields && _currentVideo.customFields['c' + pCValue])
+			{
+				trueValue = _currentVideo.customFields['c' + pCValue];
+			}
+			
+			return trueValue;
 		}
 		
 		private function getContentTypeValue():String //for the C5 value
